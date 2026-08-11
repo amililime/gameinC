@@ -52,6 +52,19 @@ void game_update(Game *g, double dt) {
         lock_and_advance(g);
 }
 
+static int try_rotate(Game *g, int dir) {
+    Piece r = piece_rotated(g->current, dir);
+    int kicks[] = {0, -1, 1, -2, 2};
+    for (int i = 0; i < 5; i++) {
+        r.x = g->current.x + kicks[i];
+        r.y = g->current.y;
+        if (board_valid(&g->board, r)) { g->current = r; return 1; }
+        r.y = g->current.y - 1;
+        if (board_valid(&g->board, r)) { g->current = r; return 1; }
+    }
+    return 0;
+}
+
 void game_handle_input(Game *g) {
     if (g->state == STATE_GAME_OVER) {
         if (IsKeyPressed(KEY_ENTER)) game_init(g);
@@ -75,9 +88,11 @@ void game_handle_input(Game *g) {
         moved.x++;
         if (board_valid(&g->board, moved)) g->current = moved;
     }
-    if (IsKeyPressed(KEY_UP)) {
-        Piece rotated = piece_rotated(g->current, 1);
-        if (board_valid(&g->board, rotated)) g->current = rotated;
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_X)) {
+        try_rotate(g, 1);
+    }
+    if (IsKeyPressed(KEY_Z)) {
+        try_rotate(g, -1);
     }
     if (IsKeyPressed(KEY_DOWN)) {
         Piece moved = g->current;

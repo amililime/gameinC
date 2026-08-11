@@ -1,0 +1,10 @@
+# Build output
+tetris
+tetris.exe
+
+# macOS app bundles
+*.app/
+*.zip
+
+# macOS system files
+.DS_Store
