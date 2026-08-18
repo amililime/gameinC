@@ -58,6 +58,38 @@ static void draw_board(const Board *b) {
     }
 }
 
+static Piece ghost_piece(const Game *g) {
+    Piece ghost = g->current;
+    while (1) {
+        Piece dropped = ghost;
+        dropped.y++;
+        if (!board_valid(&g->board, dropped)) break;
+        ghost = dropped;
+    }
+    return ghost;
+}
+
+static void draw_ghost(const Game *g) {
+    Piece ghost = ghost_piece(g);
+    if (ghost.y == g->current.y) return;
+    for (int row = 0; row < PIECE_SIZE; row++) {
+        for (int col = 0; col < PIECE_SIZE; col++) {
+            if (!piece_cell(ghost.type, ghost.rotation, row, col)) continue;
+            int bx = ghost.x + col;
+            int by = ghost.y + row;
+            if (by >= 0 && by < BOARD_HEIGHT) {
+                Color c = piece_colors[ghost.type];
+                DrawRectangleLines(
+                    BOARD_OFFSET_X + bx * CELL_SIZE,
+                    BOARD_OFFSET_Y + by * CELL_SIZE,
+                    CELL_SIZE - 1, CELL_SIZE - 1,
+                    (Color){c.r, c.g, c.b, 100}
+                );
+            }
+        }
+    }
+}
+
 static void draw_current(const Game *g) {
     Piece p = g->current;
     for (int row = 0; row < PIECE_SIZE; row++) {
@@ -91,6 +123,7 @@ void render_frame(const Game *g) {
     );
 
     draw_board(&g->board);
+    draw_ghost(g);
     draw_current(g);
     draw_panel(g);
 
